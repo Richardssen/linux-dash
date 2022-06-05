@@ -160,9 +160,7 @@ def distance(origin, destination):
          * math.cos(math.radians(lat2)) * math.sin(dlon / 2)
          * math.sin(dlon / 2))
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    d = radius * c
-
-    return d
+    return radius * c
 
 
 class FileGetter(threading.Thread):
@@ -232,7 +230,7 @@ class FilePutter(threading.Thread):
         self.url = url
         chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         data = chars * (int(round(int(size) / 36.0)))
-        self.data = ('content1=%s' % data[0:int(size) - 9]).encode()
+        self.data = f'content1={data[:int(size) - 9]}'.encode()
         del data
         self.result = None
         self.starttime = start
@@ -400,14 +398,16 @@ def getBestServer(servers):
     results = {}
     for server in servers:
         cum = []
-        url = '%s/latency.txt' % os.path.dirname(server['url'])
+        url = f"{os.path.dirname(server['url'])}/latency.txt"
         urlparts = urlparse(url)
-        for i in range(0, 3):
+        for _ in range(3):
             try:
-                if urlparts[0] == 'https':
-                    h = HTTPSConnection(urlparts[1])
-                else:
-                    h = HTTPConnection(urlparts[1])
+                h = (
+                    HTTPSConnection(urlparts[1])
+                    if urlparts[0] == 'https'
+                    else HTTPConnection(urlparts[1])
+                )
+
                 start = timeit.default_timer()
                 h.request("GET", urlparts[2])
                 r = h.getresponse()

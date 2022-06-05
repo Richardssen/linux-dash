@@ -26,18 +26,17 @@ class MainHandler(BaseHTTPRequestHandler):
             else:
                 if self.path == '/':
                     self.path = 'index.html'
-                f = open(os.path.dirname(os.path.realpath(__file__)) + os.sep + self.path)
-                data = f.read()
-                if self.path.startswith('/css/'):
-                    contentType = 'text/css'
-                f.close()
+                with open(os.path.dirname(os.path.realpath(__file__)) + os.sep + self.path) as f:
+                    data = f.read()
+                    if self.path.startswith('/css/'):
+                        contentType = 'text/css'
             self.send_response(200)
             self.send_header('Content-type', contentType)
             self.end_headers()
             self.wfile.write(data)
 
         except IOError:
-            self.send_error(404, 'File Not Found: %s' % self.path)
+            self.send_error(404, f'File Not Found: {self.path}')
 
 if __name__ == '__main__':
     server = ThreadedHTTPServer(('localhost', 8081), MainHandler)
